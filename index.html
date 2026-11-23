@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DISC 性格測驗與周哈里窗</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#eef2f5;--card:#fff;--tx:#1f2a33;--mu:#5d6b77;--bd:#d3dce3;--ac:#1f6f8b;--on:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14191d;--card:#1d252b;--tx:#e6edf2;--mu:#98a7b3;--bd:#33414b;--ac:#5cb8d6;--on:#10171b}}
+:root[data-theme="dark"]{--bg:#14191d;--card:#1d252b;--tx:#e6edf2;--mu:#98a7b3;--bd:#33414b;--ac:#5cb8d6;--on:#10171b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.7 "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+main{max-width:860px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.6rem;margin:.2em 0}h2{font-size:1.25rem;margin:.3em 0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px;margin:14px 0}
+.mu{color:var(--mu);font-size:.92rem}
+.row{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin:12px 0}
+.rh{font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between}.rh span{color:var(--mu);font-weight:400}
+.cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.cell{border:1px solid var(--bd);border-radius:8px;padding:8px}
+.cell.on{border-color:var(--ac)}
+.w{min-height:3em;font-size:.95rem}
+.chips{display:flex;gap:4px;margin-top:6px}
+.chips button{flex:1;padding:11px 0;touch-action:manipulation;border:1px solid var(--bd);background:transparent;color:var(--tx);border-radius:6px;font:inherit;cursor:pointer}
+.chips button.sel{background:var(--ac);color:var(--on);border-color:var(--ac);font-weight:700}
+.btn{background:var(--ac);color:var(--on);border:0;border-radius:8px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer;margin:6px 8px 6px 0}
+.btn.g{background:transparent;color:var(--ac);border:1px solid var(--ac)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.bar{display:grid;grid-template-columns:8.5em 1fr 3em;align-items:center;gap:8px;margin:6px 0}
+.tr{background:var(--bd);height:14px;border-radius:7px;overflow:hidden}.tr i{display:block;height:100%}
+.bar b{text-align:right}
+ul{padding-left:1.2em}li{margin:.3em 0}
+.j{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.jb{border:1px solid var(--bd);border-radius:8px;padding:10px;min-height:7em}
+.jb h3{margin:0 0 2px;font-size:1rem}.jb p{margin:2px 0 8px;font-size:.85rem;color:var(--mu)}
+.tag{display:inline-block;border:2px solid;border-radius:14px;padding:1px 10px;margin:2px 4px 2px 0;font-size:.88rem}
+table{width:100%;border-collapse:collapse}td,th{padding:6px;border-bottom:1px solid var(--bd);text-align:center}th:first-child,td:first-child{text-align:left}
+@media(max-width:480px){.bar{grid-template-columns:7em 1fr 2.6em}}
+.qr{text-align:center}.qr svg{width:200px;height:200px;background:#fff;padding:8px;border-radius:8px;box-sizing:border-box}
+.code{font:700 1.9rem/1.3 ui-monospace,Menlo,monospace;letter-spacing:.25em;text-align:center;margin:8px 0}
+textarea,input{width:100%;box-sizing:border-box;font-size:16px;font-family:inherit;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx)}
+details{margin-top:8px}summary{cursor:pointer;color:var(--ac)}
+</style></head><body><main id="app"></main>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'></script>
+<script>
+const T=[
+{k:'D',n:'老虎',f:'掌握型',e:'🐯',c:'#d9622b',d:'喜歡人講重點，是結果論者，不愛廢話。擅長開創。'},
+{k:'I',n:'孔雀',f:'影響型',e:'🦚',c:'#2d7dd2',d:'熱情洋溢，思考跳躍，常讓人跟不上你的想法。擅長表達。'},
+{k:'S',n:'無尾熊',f:'穩定型',e:'🐨',c:'#3a9a5b',d:'非常有耐性、重視安全感；要在極短時間做決定很困難，需要時間與空間。擅長支援。'},
+{k:'C',n:'貓頭鷹',f:'謹慎型',e:'🦉',c:'#8a5cc2',d:'重視證據與數字分析，沒有明確數據或證據，不會輕易相信。擅長品管。'}];
+const W=[
+['堅定、固執','有說服力、善表達','溫和、文雅','謙虛、容忍'],
+['喜歡冒險、膽子很大','團隊的活力來源','節制、穩健','嚴格考究'],
+['有決心、決斷力','使人心服、善於遊說','善良、和諧','謹慎、小心'],
+['有競爭力、進取心','頑皮、開朗','親切、誠懇','順從、善思考'],
+['堅持、有魅力','樂觀、好玩','寬大、仁慈','正確、準備']];
+// TIP[自己類型][對方類型]
+const TIP=[
+['他快你也快，給重點與結論即可。','聊他有興趣的話題，習慣他跳來跳去的說話方式；他喜歡你，就會主動靠近。','他沒有你快，要像帶新手一樣一步步說明，有求必應、多給資料與耐性，他有安全感才會決定。','可以就事論事，但他要時間與數據分析前因後果，比較後才會決定。'],
+['對方不愛閒聊，要直接講重點與結論，用簡短成熟的語氣；想解釋細節先徵求同意。他決定快，改變也快。','談愉快好玩的話題，但別忘了有意無意帶回正事。','不宜太熱情，給資料與保證，一步步引導，留時間與空間讓他決定。','最難應付的對象：要調到「C檔」，用邏輯、證據與驗證過的數據說話。'],
+['對方很自信，別被嚇到，你也要表現出自信；步調調快，講重點與結論。','讓他多說，你認真聽並點頭認同；他喜歡你，自然會主動問。','彼此沒問題，但要鼓起勇氣把需要的事說出口。','準備好數據、推理與邏輯，別介意他斤斤計較；讓他覺得準確有條理，就成功一大半。'],
+['先給答案與結論；他沒問的細節不必主動說，要說先徵得同意，讓他主導談話。','習慣有趣的話題並表現出興趣，先讓他喜歡你，再談正事。','先聊家常暖身，步調放慢，讓他有安全感，再一步步帶領並給予適當證據。','你們最合拍，同樣重數據與條理；避免跟他比誰比較準確。']];
+const CHAM='各項分數很接近，代表你能依情境切換風格：遇到老虎就講重點、遇到孔雀就熱絡、遇到無尾熊放慢腳步、遇到貓頭鷹備好數據。優點是適應力強、好溝通；要留意別讓人看不清你真正的立場，也別為了迎合別人而耗損自己。';
+const JO={open:['開放我','自己知道，別人也知道','你與他人看法一致，是被充分理解的特質。'],blind:['盲目我','自己不知道，別人知道','別人看見、你卻低估的特質，可主動請教回饋。'],hid:['隱藏我','自己知道，別人不知道','你自認有、別人較少看到，可考慮多表達出來。'],unk:['未知我','自己不知道，別人也不知道','雙方都較少看見，可能尚待發掘，或本來就不明顯。']};
+const blank=()=>Array.from({length:5},()=>Array(4).fill(null));
+const sum=g=>[0,1,2,3].map(c=>g.reduce((a,r)=>a+r[c],0));
+const done=g=>g.every(r=>r.every(v=>v!=null));
+const fmt=v=>+v.toFixed(1);
+let st={s:'intro',self:null,gs:blank(),go:blank(),others:[],codes:[],msg:'',link:(/^https?:$/.test(location.protocol)&&!/claude|anthropic/.test(location.hostname))?location.href.split('#')[0]:'https://claude.ai/artifact/Pjo5Jbw18swZD1PKgX7k6y'};
+let RATER=location.hash==='#rater';
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,'&#39;');
+const qr=t=>{if(typeof qrcode==='undefined')return `<p class='mu'>QR 元件無法載入，請改用連結或代碼：${esc(t)}</p>`;try{const q=qrcode(0,'M');q.addData(t);q.make();return `<div class='qr'>${q.createSvgTag({cellSize:4,margin:2,scalable:true})}</div>`}catch(e){return `<p class='mu'>${esc(t)}</p>`}};
+const PM=[];(function p(a,r){if(!a.length)PM.push(r.join(''));a.forEach((x,i)=>p(a.filter((_,j)=>j!==i),[...r,x]))})([1,3,5,7],[]);
+const AL='ABCDEFGHJKLMNPQRSTUVWXYZ';
+const enc=g=>{const ix=g.map(r=>PM.indexOf(r.join('')));return ix.map(i=>AL[i]).join('')+AL[ix.reduce((a,b)=>a+b,0)%24]};
+const dec=c=>{if(!/^[A-HJ-NP-Z]{6}$/.test(c))return null;const ix=[...c].map(x=>AL.indexOf(x));if(ix.slice(0,5).reduce((a,b)=>a+b,0)%24!==ix[5])return null;return sum(ix.slice(0,5).map(i=>PM[i].split('').map(Number)))};
+const KEY='disc-v1';
+function save(){if(RATER)return;try{localStorage.setItem(KEY,JSON.stringify({self:st.self,others:st.others,codes:st.codes}))}catch(e){}}
+function load(){if(RATER)return;try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&d.self){st.self=d.self;st.others=d.others||[];st.codes=d.codes||[];st.s=st.others.length?'invite':'selfRes'}}catch(e){}}
+addEventListener('hashchange',()=>{RATER=location.hash==='#rater';st.s=RATER?'rintro':'intro';render()});
+const avg=()=>[0,1,2,3].map(c=>st.others.reduce((a,o)=>a+o[c],0)/st.others.length);
+function grid(g,key){return g.map((r,i)=>`<div class="row"><div class="rh">第 ${i+1} 組<span>已填 ${r.filter(v=>v!=null).length}/4</span></div><div class="cells">`+r.map((v,c)=>`<div class="cell${v!=null?' on':''}"><div class="w">${W[i][c]}</div><div class="chips">`+[1,3,5,7].map(n=>`<button data-g="${key}" data-r="${i}" data-c="${c}" data-v="${n}" class="${v===n?'sel':''}">${n}</button>`).join('')+'</div></div>').join('')+'</div></div>').join('')}
+function res(sc,tips){
+ const mx=Math.max(...sc),mn=Math.min(...sc),tops=sc.map((v,i)=>mx-v<.01?i:-1).filter(i=>i>=0),cham=mx-mn<=8;
+ const rest=sc.map((v,i)=>[v,i]).filter(x=>!tops.includes(x[1])).sort((a,b)=>b[0]-a[0])[0];
+ let h='<div class="card">'+T.map((t,i)=>`<div class="bar"><span>${t.e} ${t.k} ${t.n}</span><div class="tr"><i style="width:${sc[i]/35*100}%;background:${t.c}"></i></div><b>${fmt(sc[i])}</b></div>`).join('')+'<div class="mu">每項分數範圍 5–35，四項合計 80。</div></div>';
+ h+=`<div class="card"><h2>${cham?'🦎 變色龍型':tops.map(i=>`${T[i].e} ${T[i].n}型（${T[i].f}）`).join('＋')}</h2>`;
+ if(cham)h+=`<p>${CHAM}</p><p class="mu">判定方式：最高分與最低分相差 8 分以內。略偏：${tops.map(i=>T[i].n).join('、')}。</p>`;
+ else{h+=tops.map(i=>`<p>${T[i].d}</p>`).join('');if(rest&&mx-rest[0]<=4)h+=`<p class="mu">副型傾向：${T[rest[1]].e} ${T[rest[1]].n}型</p>`}
+ if(tips){const a=tops[0];h+=`<h2>你（${T[a].n}）遇到不同類型的人</h2><ul>`+T.map((t,j)=>`<li><b>${t.e} 遇到${t.n}：</b>${TIP[a][j]}</li>`).join('')+'</ul>'}
+ return h+'</div>'}
+function cmp(){
+ const s=st.self,o=avg(),q={open:[],blind:[],hid:[],unk:[]};
+ T.forEach((t,i)=>{const a=s[i]>20,b=o[i]>20;q[a&&b?'open':!a&&b?'blind':a&&!b?'hid':'unk'].push(`<span class="tag" style="border-color:${t.c}">${t.e} ${t.n}　自 ${fmt(s[i])}／他 ${fmt(o[i])}</span>`)});
+ const gap=T.map((_,i)=>o[i]-s[i]),k=gap.reduce((m,v,i)=>Math.abs(v)>Math.abs(gap[m])?i:m,0);
+ const top=a=>a.indexOf(Math.max(...a));
+ let h='<div class="card"><h2>自評與他評分數</h2><table><tr><th></th><th>自評</th><th>他評</th><th>差距</th></tr>'+T.map((t,i)=>`<tr><td>${t.e} ${t.n}</td><td>${fmt(s[i])}</td><td>${fmt(o[i])}</td><td>${gap[i]>0?'+':''}${fmt(gap[i])}</td></tr>`).join('')+`</table><p>${top(s)===top(o)?`自評與他評的主型一致，都是${T[top(s)].n}型。`:`自評主型是${T[top(s)].n}，他人眼中的主型是${T[top(o)].n}，兩者不同。`}落差最大的是${T[k].n}：${gap[k]>0?'別人比你自己更看見這項特質。':'你自認有這項特質，別人較少看到。'}（共 ${st.others.length} 位評價者的平均）</p></div>`;
+ h+='<div class="card"><h2>周哈里窗</h2><p class="mu">以該類型分數高於 20 分（四項平均）視為「明顯」，再對照自己與他人是否都看見。</p><div class="j">'+['open','blind','hid','unk'].map(x=>`<div class="jb"><h3>${JO[x][0]}</h3><p>${JO[x][1]}</p>${q[x].join('')||'<span class="mu">無</span>'}<p>${JO[x][2]}</p></div>`).join('')+'</div></div>';
+ return h}
+function render(){
+ const s=st.s;let h='';
+ if(s==='intro')h=`<h1>DISC 性格測驗</h1><div class="card"><p>共三步：先自評，再請別人評你，最後比對兩者並以周哈里窗分析。</p><ul><li>每一組有 4 個描述，請把 <b>1、3、5、7</b> 各用一次：7 分最像你，1 分最不像你。</li><li>共 5 組。系統會把每一欄由上到下加總，得到 D、I、S、C 四項統計結果。</li><li>填寫時不會顯示類型名稱，以免影響作答。</li></ul><p class="mu">本測驗是自我探索工具，不是專業心理診斷。</p><button class="btn" data-a="start">開始自評</button><details><summary>想用手機做？掃這個 QR</summary>${qr(st.link)}</details></div>`;
+ else if(s==='self')h=`<h1>第一步：自評</h1><p class="mu">依「你覺得自己」的樣子，每組 1、3、5、7 各用一次。</p>${grid(st.gs,'gs')}<button class="btn" data-a="selfdone" ${done(st.gs)?'':'disabled'}>計算我的結果</button>`;
+ else if(s==='selfRes')h=`<h1>你的自評結果</h1>${res(st.self,true)}<button class="btn" data-a="toother">想了解別人眼中的你嗎？請按</button>`;
+ else if(s==='other'&&RATER)h=`<h1>請評價對方</h1><p class='mu'>憑你對他的印象，每組 1、3、5、7 各用一次（7 最像、1 最不像）。</p>${grid(st.go,'go')}<button class='btn' data-a='rdone' ${done(st.go)?'':'disabled'}>產生我的代碼</button>`;
+ else if(s==='other')h=`<h1>第二步：他人評價（第 ${st.others.length+1} 位）</h1><p class="mu">請把畫面交給信任的朋友或同事，依「他眼中的你」作答；每組 1、3、5、7 各用一次。</p>${grid(st.go,'go')}<button class="btn" data-a="otherdone" ${done(st.go)?'':'disabled'}>送出這位的評價</button>`;
+ else if(s==='otherRes')h=`<h1>他人眼中的你</h1><p class="mu">目前 ${st.others.length} 位評價者的平均。</p>${res(avg(),false)}<button class="btn g" data-a="more">再加一位評價者</button><button class="btn" data-a="compare">看自評與他評比對</button>`;
+ else if(s==='rintro')h=`<h1>DISC 性格評價</h1><div class='card'><p>有朋友想了解「別人眼中的他」。請憑你對他的印象，每一組把 <b>1、3、5、7</b> 各用一次：7 分最像他，1 分最不像他。</p><p>共 5 組，完成後會得到一組代碼，把代碼交給對方即可。</p><button class='btn' data-a='rstart'>開始評價</button></div>`;
+ else if(s==='rres'){const c=enc(st.go);h=`<h1>完成，謝謝你！</h1><div class='card'><p>請把這組代碼交給對方：</p><div class='code'>${c}</div>${qr(c)}<p class='mu'>可以讓對方掃描這個 QR、傳訊息給他，或直接唸給他。</p><button class='btn g' data-a='copy' data-c='${c}'>複製代碼</button></div>`}
+ else if(s==='invite')h=`<h1>第二步：請別人評你</h1><div class='card'><h2>方式一：讓對方掃碼</h2><p>請對方用手機或平板的相機掃描，填完會得到一組 6 個字母的代碼。</p>${qr(st.link.includes('#')?st.link:st.link+'#rater')}<p class='mu'>連結（可修改後按更新）</p><input id='lk' value='${esc(st.link)}'><button class='btn g' data-a='qr'>更新 QR</button><p class='mu'>對方必須能開啟這個連結：請先在本頁的分享設定，開放給「知道連結的人」。</p></div><div class='card'><h2>輸入對方給你的代碼</h2><p class='mu'>可一次貼上多組，用空白或換行分開。</p><textarea id='cd' rows='3' placeholder='例如 KQMBTH'></textarea><button class='btn' data-a='addcodes'>加入</button><p>${st.msg||''}</p><p>目前已收到 ${st.others.length} 份評價。</p></div><div class='card'><h2>方式二：當面交給對方填</h2><button class='btn g' data-a='inperson'>在這台裝置上讓對方填</button></div>${st.others.length?`<button class='btn' data-a='compare'>看自評與他評比對</button><button class='btn g' data-a='otherres'>只看他人眼中的我</button>`:''}`;
+ else h=`<h1>第三步：自評與他評比對</h1>${cmp()}<button class="btn g" data-a="more">再加一位評價者</button>`;
+ if(!RATER&&s!=='intro')h+='<br><button class="btn g" data-a="reset">重新開始</button>';
+ document.getElementById('app').innerHTML=h;window.scrollTo(0,0);save()}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.g){const g=st[b.dataset.g],r=+b.dataset.r,c=+b.dataset.c,v=+b.dataset.v,y=window.scrollY;
+  if(g[r][c]===v)g[r][c]=null;else{for(let k=0;k<4;k++)if(g[r][k]===v)g[r][k]=null;g[r][c]=v}
+  render();window.scrollTo(0,y);return}
+ const a=b.dataset.a;st.msg='';
+ if(a==='copy'){try{navigator.clipboard.writeText(b.dataset.c).catch(()=>{})}catch(e){}return}
+ if(a==='start')st.s='self';
+ else if(a==='selfdone'){st.self=sum(st.gs);st.s='selfRes'}
+ else if(a==='toother')st.s='invite';
+ else if(a==='otherdone'){st.others.push(sum(st.go));st.s='otherRes'}
+ else if(a==='more')st.s='invite';
+ else if(a==='compare')st.s='cmp';
+ else if(a==='otherres')st.s='otherRes';
+ else if(a==='inperson'||a==='rstart'){st.go=blank();st.s='other'}
+ else if(a==='rdone')st.s='rres';
+ else if(a==='qr'){st.link=document.getElementById('lk').value.trim()||st.link}
+ else if(a==='addcodes'){const v=document.getElementById('cd').value.split(/[\s,;]+/).filter(Boolean);let ok=0,bad=0,dup=0;v.forEach(c=>{c=c.toUpperCase();const r=dec(c);if(!r)bad++;else if(st.codes.includes(c))dup++;else{st.codes.push(c);st.others.push(r);ok++}});st.msg=`已加入 ${ok} 份`+(bad?`，${bad} 組代碼無效，請檢查是否輸錯`:'')+(dup?`，${dup} 組重複已略過`:'')}
+ else if(a==='reset')st={s:'intro',self:null,gs:blank(),go:blank(),others:[],codes:[],msg:'',link:st.link};
+ render()});
+load();if(RATER)st.s='rintro';render();
+</script></body></html>
