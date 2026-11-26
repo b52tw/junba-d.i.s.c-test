@@ -40,6 +40,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:6px;border-bottom:1px so
 textarea,input{width:100%;box-sizing:border-box;font-size:16px;font-family:inherit;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx)}
 details{margin-top:8px}summary{cursor:pointer;color:var(--ac)}
 .gt td{font-size:.8rem;text-align:left;vertical-align:top}.gt td:first-child{text-align:center}.gt th{font-size:.85rem}.ph{display:none}
+.row.lock{opacity:.45}.row.cur{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}button:disabled{cursor:not-allowed}
 label[for]{display:block;font-weight:600;margin-top:6px}
 input[type=radio],input[type=checkbox]{width:auto;margin-right:6px}input,textarea,select{margin:4px 0}select{width:100%;box-sizing:border-box;font-size:16px;padding:8px;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px}
 @media print{:root:root:root{--bg:#fff;--card:#fff;--tx:#000;--mu:#444;--bd:#999}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}.btn,.noprint,details{display:none!important}.ph{display:block;margin-bottom:8px}.card,.row{break-inside:avoid}main{max-width:none;padding:0}}
@@ -184,7 +185,8 @@ function save(){if(RATER)return;try{localStorage.setItem(KEY,JSON.stringify({sel
 function load(){if(RATER)return;try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&d.hist)st.hist=d.hist;if(d&&d.self){st.tmeta=d.tmeta||null;st.tm=d.tm||null;st.nc=d.nc||null;st.self=d.self;st.gs=d.gs||st.gs;st.prof=d.prof||st.prof;st.id=d.id||st.id;st.sent=!!d.sent;st.opt=false;st.sel=d.sel==null?null:d.sel;st.words=d.words||[];st.og=d.og||[];st.others=d.others||[];st.codes=d.codes||[];st.resume=st.others.length?'invite':'selfRes'}}catch(e){}}
 addEventListener('hashchange',()=>{RATER=location.hash==='#rater'||QP.has('r');st.s=RATER?'rintro':'intro';render()});
 const avg=()=>[0,1,2,3].map(c=>st.others.reduce((a,o)=>a+o[c],0)/st.others.length);
-function grid(g,key){return g.map((r,i)=>`<div class="row"><div class="rh">第 ${i+1} 組<span>已填 ${r.filter(v=>v!=null).length}/4</span></div><div class="cells">`+r.map((v,c)=>`<div class="cell${v!=null?' on':''}"><div class="w">${W[i][c]}</div><div class="chips">`+[1,3,5,7].map(n=>`<button data-g="${key}" data-r="${i}" data-c="${c}" data-v="${n}" class="${v===n?'sel':''}">${n}</button>`).join('')+'</div></div>').join('')+'</div></div>').join('')}
+const open=(g,r)=>g.slice(0,r).every(x=>x.every(v=>v!=null));
+function grid(g,key){const cur=g.findIndex(x=>x.some(v=>v==null));return `<p class='mu'>已完成 ${cur<0?5:cur}/5 組。每一組要把 1、3、5、7 全部分配完，才能進入下一組。</p>`+g.map((r,i)=>{const lock=!open(g,i),n=r.filter(v=>v!=null).length;return `<div class='row${lock?' lock':''}${i===cur?' cur':''}' id='row-${key}-${i}'><div class='rh'>第 ${i+1} 組<span>${lock?'請先完成上一組':n===4?'已完成':'已填 '+n+'/4'}</span></div><div class='cells'>`+r.map((v,c)=>`<div class='cell${v!=null?' on':''}'><div class='w'>${W[i][c]}</div><div class='chips'>`+[1,3,5,7].map(x=>`<button data-g='${key}' data-r='${i}' data-c='${c}' data-v='${x}' class='${v===x?'sel':''}'${lock?' disabled':''}>${x}</button>`).join('')+'</div></div>').join('')+'</div></div>'}).join('')}
 function res(sc,tips){
  const mx=Math.max(...sc),mn=Math.min(...sc),tops=sc.map((v,i)=>mx-v<.01?i:-1).filter(i=>i>=0),cham=mx-mn<=8;
  const rest=sc.map((v,i)=>[v,i]).filter(x=>!tops.includes(x[1])).sort((a,b)=>b[0]-a[0])[0];
@@ -226,9 +228,9 @@ function render(){
  document.getElementById('app').innerHTML=h;window.scrollTo(0,0);save()}
 document.addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b)return;
- if(b.dataset.g){const g=st[b.dataset.g],r=+b.dataset.r,c=+b.dataset.c,v=+b.dataset.v,y=window.scrollY;if(b.dataset.g==='gs'){const nw=Date.now();st.tm=st.tm||[0,0,0,0,0];st.nc=st.nc||[0,0,0,0,0];st.tm[r]+=st.tl?Math.min(nw-st.tl,60000):0;st.nc[r]++;st.tl=nw}
+ if(b.dataset.g){const g=st[b.dataset.g],r=+b.dataset.r,c=+b.dataset.c,v=+b.dataset.v,y=window.scrollY;if(!open(g,r)){toast('請先完成上一組');return}const wd=g[r].every(x=>x!=null);if(b.dataset.g==='gs'){const nw=Date.now();st.tm=st.tm||[0,0,0,0,0];st.nc=st.nc||[0,0,0,0,0];st.tm[r]+=st.tl?Math.min(nw-st.tl,60000):0;st.nc[r]++;st.tl=nw}
   if(g[r][c]===v)g[r][c]=null;else{for(let k=0;k<4;k++)if(g[r][k]===v)g[r][k]=null;g[r][c]=v}
-  render();window.scrollTo(0,y);return}
+  render();window.scrollTo(0,y);if(!wd&&g[r].every(x=>x!=null)&&r<4){const el=document.getElementById('row-'+b.dataset.g+'-'+(r+1));if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'center'});toast('第 '+(r+1)+' 組完成，請繼續第 '+(r+2)+' 組')}return}
  const a=b.dataset.a;st.msg='';
  if(a==='cplink'){cp(b.dataset.u);return}
  if(a==='sharelink'){sh({title:'DISC 人際風格測驗',text:b.dataset.t,url:b.dataset.u});return}
