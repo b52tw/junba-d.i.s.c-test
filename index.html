@@ -70,7 +70,7 @@ const sum=g=>[0,1,2,3].map(c=>g.reduce((a,r)=>a+r[c],0));
 const done=g=>g.every(r=>r.every(v=>v!=null));
 const fmt=v=>+v.toFixed(1);
 const QP=new URLSearchParams(location.search);const HOST=QP.get('host')==='1';const nid=()=>[...crypto.getRandomValues(new Uint8Array(8))].map(b=>'abcdefghjkmnpqrstuvwxyz23456789'[b%31]).join('');
-let st={prof:{mode:0,cls:QP.get('c')||'',name:'',email:'',phone:'',line:''},id:nid(),sent:false,opt:false,sel:null,words:[],hc:'',hres:'',s:'intro',self:null,gs:blank(),go:blank(),others:[],og:[],codes:[],msg:'',link:(/^https?:$/.test(location.protocol)&&!/claude|anthropic/.test(location.hostname))?location.href.split(/[?#]/)[0]:'https://claude.ai/artifact/Pjo5Jbw18swZD1PKgX7k6y'};
+let st={prof:{mode:0,cls:QP.get('c')||'',name:'',email:'',phone:'',line:''},id:nid(),sent:false,opt:false,sel:null,words:[],hist:[],tmeta:null,tm:null,nc:null,tl:null,hc:'',hres:'',s:'intro',self:null,gs:blank(),go:blank(),others:[],og:[],codes:[],msg:'',link:(/^https?:$/.test(location.protocol)&&!/claude|anthropic/.test(location.hostname))?location.href.split(/[?#]/)[0]:'https://claude.ai/artifact/Pjo5Jbw18swZD1PKgX7k6y'};
 let RATER=location.hash==='#rater'||QP.has('r');
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,'&#39;');
 const qr=t=>{if(typeof qrcode==='undefined')return `<p class='mu'>QR 元件無法載入，請改用連結或代碼：${esc(t)}</p>`;try{const q=qrcode(0,'M');q.addData(t);q.make();return `<div class='qr'>${q.createSvgTag({cellSize:4,margin:2,scalable:true})}</div>`}catch(e){return `<p class='mu'>${esc(t)}</p>`}};
@@ -87,6 +87,82 @@ const summ=()=>`<div class='card'><b>課堂代號：</b>${esc(st.prof.cls)}　<b
 const wordsCard=()=>st.words.length?`<div class='card'><h2>別人給你的話</h2><ul>${st.words.map(w=>`<li>${esc(w)}</li>`).join('')}</ul></div>`:'';
 const pie=c=>{const tot=c.reduce((a,b)=>a+b,0);if(!tot)return `<p class='mu'>尚無資料</p>`;let a0=-Math.PI/2,out='';const R=80,cx=90,cy=90;c.forEach((v,i)=>{if(!v)return;const a1=a0+v/tot*2*Math.PI,x0=cx+R*Math.cos(a0),y0=cy+R*Math.sin(a0),x1=cx+R*Math.cos(a1),y1=cy+R*Math.sin(a1);out+=v===tot?`<circle cx='${cx}' cy='${cy}' r='${R}' fill='${T[i].c}'/>`:`<path d='M${cx},${cy} L${x0},${y0} A${R},${R} 0 ${v/tot>.5?1:0} 1 ${x1},${y1} Z' fill='${T[i].c}'/>`;a0=a1});return `<div style='display:flex;flex-wrap:wrap;align-items:center;gap:16px'><svg viewBox='0 0 180 180' width='180' height='180'>${out}</svg><div>`+T.map((t,i)=>`<div><span class='tag' style='border-color:${t.c}'>${t.e} ${t.n}</span> ${c[i]} 人（${Math.round(c[i]/tot*100)}%）</div>`).join('')+'</div></div>'};
 const omain=os=>{const c=[0,0,0,0];os.forEach(o=>c[o.avg.indexOf(Math.max(...o.avg))]++);return c};
+const X=[{"tag":"目標在前，就往前衝","desc":"你重視成果與效率，習慣掌握主導權。遇到問題時，你的第一個念頭通常是「怎麼解決」，而不是「為什麼會這樣」。越是有壓力的場面，你越能集中火力。","st":["決定得快，也願意扛下結果","面對挑戰不退縮，越難越有勁","能把模糊的目標變成具體行動","說話直接坦率，不繞圈子"],"bl":["急著要結果，可能忽略了別人的感受","對細節和過程比較沒耐心","「帶頭」一不小心就變成「掌控」"],"stress":"壓力下會變得更強勢，說話更衝，想把所有事情攬在自己手上。","wy":["先講結論，細節後面再補","給你選項和決定的空間","就事論事，不必拐彎抹角"],"yt":["做決定前，多問一句「你覺得呢？」","稱讚別人的努力過程，不只看成果","把命令改成邀請，例如「我們試試看…」"],"car":["創業","專案管理","業務開發","營運主管","危機處理","律師"],"gr":"試著放慢半拍。你的速度是很大的優勢，但讓別人跟得上，團隊才能走得更遠。"},{"tag":"有人的地方，就是你的舞台","desc":"你樂觀外向、擅長表達，常常讓身邊的人覺得輕鬆自在。你在乎關係與認同，用熱情帶動別人，也是團隊裡新點子的來源。","st":["表達力好，很會說故事","跟陌生人也能很快熟起來","樂觀，能替團隊帶來能量","點子多，反應快"],"bl":["一口氣答應太多，最後做不完","對重複、瑣碎的工作容易失去耐心","說的比做的多，細節容易漏掉"],"stress":"壓力下可能變得情緒化，或是用開玩笑、換話題來躲開問題。","wy":["給你表達和互動的空間","肯定你的貢獻，最好當著大家的面說","重要細節寫下來提醒，不要長篇說教"],"yt":["答應之前，先看一眼行事曆","重要的事情，用文字再確認一次","等對方說完再接話"],"car":["行銷企劃","公關","業務","講師或主持","活動策劃","內容創作"],"gr":"替你的熱情接上一套簡單的追蹤方法（清單、提醒），你的影響力會更持久。"},{"tag":"穩穩的，最讓人安心","desc":"你溫和、有耐心，是很好的傾聽者。你重視和諧與穩定，習慣在背後默默支持大家，是團隊裡的定心丸。","st":["可靠，做事有始有終","善於傾聽，能體會別人的感受","讓團隊保持穩定與和諧","有耐心，適合長期耕耘"],"bl":["不太會拒絕，常常委屈自己","面對變動會不安，傾向維持現狀","有意見時常放在心裡不說"],"stress":"壓力下會變得安靜、退讓，嘴上說沒關係，情緒卻在心裡慢慢累積。","wy":["有變動時提早說，並說明原因","給你時間想，不要逼你當場表態","真心關心你，而不只是交代事情"],"yt":["練習說「我想一下」或「這次我沒辦法」","把你的想法說出來，大家其實很想聽","把大的改變拆成小步驟，一次適應一點"],"car":["人力資源","護理與照護","教育輔導","客戶服務","行政管理","社工"],"gr":"你的意見和別人的一樣重要。偶爾替自己發聲，關係不會變差，反而更真實。"},{"tag":"想清楚了，再出手","desc":"你理性、細心，在乎正確與品質。你習慣先收集資訊、比較利弊，才做出決定；事情交到你手上，大家都很放心。","st":["注重細節，品質穩定","邏輯清楚，擅長分析","做事有計畫、有系統","能提早看見風險"],"bl":["追求完美，有時拖慢進度","不常表露情緒，容易被當成冷淡","對錯誤的容忍度比較低"],"stress":"壓力下會變得更挑剔、更退縮，陷入一再檢查或想太多的循環。","wy":["提供資料和明確的標準","給你準備的時間，避免臨時改變","有邏輯地討論，就事論事"],"yt":["先講結論，再補充細節","除了指出問題，也說說欣賞的地方","接受「夠好」有時就是最好"],"car":["工程師","會計財務","研究分析","品質管理","資料科學","法務"],"gr":"不是每件事都需要百分之百的資訊。替自己設一條「這樣就夠了」的線，你會輕鬆很多。"}];
+const PR={"DI":{"name":"開路先鋒","text":"你既能拍板，又能號召人跟上，特別適合開創新局。要留意的是，別讓速度蓋過了傾聽。"},"DS":{"name":"穩健領頭羊","text":"你目標明確，同時也顧及團隊感受。有時你會在「往前推」和「照顧人」之間拉扯，這很正常。"},"DC":{"name":"策略家","text":"你要結果，也要正確，標準高、效率也高。小心別對自己和別人都太嚴格。"},"IS":{"name":"暖心連結者","text":"你好相處、人緣好，很會凝聚氣氛。對你來說比較難的，是說「不」和面對衝突。"},"IC":{"name":"創意說服家","text":"你點子多，又講得出道理。你可能常在「追求完美」和「想要新鮮」之間擺盪。"},"SC":{"name":"可靠守門員","text":"你細心、負責、按部就班，是最讓人放心的夥伴。面對快速變化時，可以多給自己一點彈性。"}};
+const PI={DD:['兩人都重結果、決定快，目標一致時推進很有力。','容易搶方向、互不讓步，變成比誰更強勢。','事先講好誰決定哪一塊，對方提出結論時先說「同意的部分」。'],
+II:['氣氛熱絡、點子源源不絕，彼此欣賞。','都愛說也都愛玩，細節沒人收尾，承諾可能一起落空。','會後用文字寫下「誰、做什麼、何時」，指定一位負責提醒。'],
+SS:['彼此體貼、步調一致，相處非常安心。','兩人都不願說出需求，問題悶著累積，決定遲遲沒人拍板。','約定固定時間坦白說「我其實想要…」，並輪流當做決定的人。'],
+CC:['重視證據與標準，討論有邏輯、品質穩。','互相挑剔細節、追求完美，進度可能被拖慢。','先約定「夠好」的標準與截止時間，避免比誰更準確。'],
+DI:['都外向主動，一個定方向、一個帶氣氛，開創力強。','D 嫌 I 太散、I 嫌 D 太硬，細節常被兩邊略過。','D 先肯定 I 的點子，I 把重點濃縮成結論再說。'],
+DS:['D 的衝勁加上 S 的穩定與支持，能互補成穩健的組合。','速度差：D 催、S 需要時間；S 不表態，D 誤以為同意。','D 給時間與選項，S 把想法和底線說出口，重大決定先預告。'],
+DC:['都重成果與品質，目標明確又講求精準。','D 要快、C 要準；D 嫌 C 慢，C 嫌 D 草率。','先訂出「必須準確」與「可以先做」的清單，各走各的節奏。'],
+IS:['都重視關係，溫暖好相處，氣氛融洽。','I 的突發熱情讓 S 不安，S 的沉默讓 I 以為沒問題。','I 提早預告變動，S 用「我需要想一下」代替沉默。'],
+IC:['創意加上嚴謹，一個發想、一個驗證，互補性高。','感性與證據的落差：I 憑感覺說、C 要資料；C 的質疑讓 I 覺得被潑冷水。','I 先備一點數據，C 先肯定想法再提出風險。'],
+SC:['都細心、可靠、按部就班，合作穩當。','兩人都保守，遇到變動容易一起卡住，意見放在心裡。','定期安排「改變的小實驗」，並主動說出各自真正的顧慮。']};
+const KIND={DD:'同型',II:'同型',SS:'同型',CC:'同型',DI:'相鄰',DC:'相鄰',IS:'相鄰',SC:'相鄰',DS:'對立',IC:'對立'};
+const MICRO=[['這週挑一件小事，不等大家同意就先做決定並說明理由','開會時先說出你的結論，再補上原因','為一件拖延的事訂下今天的截止時間'],
+['這週主動稱讚三個人，並說出具體原因','在一個不熟的場合，先開口自我介紹一次','用一句話分享你最近的小成就，不必等被問'],
+['這週找一個人，先聽他講完十分鐘不打斷','對一個提議先說「我想想你的立場」再回應','主動問一個人「最近還好嗎」，並記住他說的'],
+['做決定前，先列出兩個風險與一個佐證','把一份工作交出去前，用清單檢查一次','把一個想法寫成三個步驟與一個完成標準']];
+const TN=['很快','偏快','中等','偏慢','很慢'],BN=['偏低','中等偏低','中等偏高','偏高','非常高'];
+const TX=[['作答速度較快，和 D 型「直覺先行、決定果斷」的節奏一致。','你平常行動很快，這次作答卻特別慎重，可能在意「別人怎麼看你」，或這些特質之間讓你很難取捨。','作答節奏中等，介於直覺與斟酌之間。'],
+['作答速度較快，像你說話一樣憑感覺、反應快；細節可能沒細讀，可以再檢查一次。','你通常外放，這次卻停留很久，可能在「想要的樣子」與「真實的樣子」之間猶豫。','作答節奏中等，沒有明顯偏離你的類型。'],
+['你平常偏溫和穩定，這次卻答得較快，可能對這類題目很有把握，或是憑直覺作答。','作答偏慢，符合 S 型「不急著表態、先想清楚」的特質，也可能在顧慮每個選擇是否妥當。','作答節奏中等，沒有明顯偏離你的類型。'],
+['你通常謹慎，這次卻答得較快，可能這些特質你很熟悉，也可能沒細想；想更準，可以慢慢再做一次。','作答偏慢，與 C 型「先衡量再決定」一致，你很可能逐一比較並反覆檢查。','作答節奏中等，沒有明顯偏離你的類型。']];
+const JQ={open:['開放我','強連結','你的這些特質被看見也被認同，是互動中最穩的基礎。','容易被貼上固定標籤，別人可能忽略你其他面向，也要留意被期待一直這樣。'],
+blind:['盲目我','弱連結（你看不到）','別人看見你的長處，你自己卻低估，可以放心使用它。','你可能有自己沒察覺的習慣，別人有感，需要具體回饋才看得見。'],
+hid:['隱藏我','弱連結（別人看不到）','你有餘裕與潛力，還沒全面展現。','別人不知道你的想法與付出，容易被誤解或忽略。'],
+unk:['未知我','尚未連結','還有可探索的空間，可以在新情境試試。','雙方都沒特別留意，可能是共同的盲點。']};
+const hs=s=>{let x=2166136261;for(let i=0;i<s.length;i++)x=Math.imul(x^s.charCodeAt(i),16777619);return x>>>0};
+const pk=(a,sd,n)=>a[(sd+(n||0))%a.length];
+const pairKey=(a,b)=>[a,b].sort().map(i=>'DISC'[i]).join('');
+const band=v=>v>=30?4:v>=25?3:v>=21?2:v>=15?1:0;
+const tband=sec=>sec<45?0:sec<90?1:sec<180?2:sec<300?3:4;
+const fmc=(x)=>`${T[x[1]].e}「${W[x[0]][x[1]]}」`;
+const timeCard=m=>{const t=st.tmeta;if(!t||!t.rows)return '';const b=tband(t.sec),sp=b<=1?0:b>=3?1:2,rows=t.rows,md=[...rows].sort((p,q)=>p-q)[2],mx=Math.max(...rows),ri=rows.indexOf(mx);
+ let h=`<div class='card'><h2>作答節奏與個性線索</h2><p>5 組共約 <b>${t.sec} 秒</b>（${TN[b]}），修改了 <b>${t.rev}</b> 次。</p><p>${TX[m][sp]}</p>`;
+ if(mx>=15&&mx>=md*1.8)h+=`<p>你在第 ${ri+1} 組停留最久（約 ${mx} 秒）：${W[ri].map(w=>'「'+w+'」').join('')}，這幾項特質對你最難取捨。</p>`;
+ h+=`<p>${t.rev>=4?`你反覆調整了 ${t.rev} 次，代表你在不同風格之間有拉扯，也可能是彈性高、能看見多個面向。`:t.rev<=1?'幾乎沒有修改，代表你的選擇很篤定。':'修改次數不多，判斷相當穩定。'}</p><p class='mu'>作答速度也受閱讀速度、裝置與環境影響，只能當作線索，不是診斷。</p></div>`;return h};
+function rich(){try{const sc=st.self,g=st.gs;if(!sc||!done(g))return '';
+ const od=sc.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]),m=od[0][1],m2=od[1][1],low=od[3][1],mx=od[0][0],mn=od[3][0],cham=mx-mn<=8;
+ const sec=st.tmeta?st.tmeta.sec:0,n=st.hist.length,sd=hs(sc.join()+'|'+sec+'|'+n),xt=X[m],hi=band(mx)>=3;
+ const sel=(a,k)=>Array.from({length:Math.min(k,a.length)},(_,i)=>a[(sd+i)%a.length]);
+ let h=`<div class='card'><h2>你的深入解析</h2>`;
+ if(!cham&&mx-od[1][0]<=6){const q=PR[pairKey(m,m2)];if(q)h+=`<p><b>${T[m].e}${T[m2].e} 你的組合型：${q.name}</b><br>${q.text}</p>`}
+ h+=`<p><b>${xt.tag}。</b>${hi?'這項特質在你身上很突出':'這項特質在你身上屬於'+BN[band(mx)]}（${fmt(mx)} 分）。${xt.desc}</p>`;
+ h+=`<p><b>你可以善加運用的：</b></p><ul>${sel(xt.st,hi?2:3).map(x=>`<li>${x}</li>`).join('')}</ul><p><b>要留意的：</b></p><ul>${sel(xt.bl,hi?3:2).map(x=>`<li>${x}</li>`).join('')}</ul><p>${xt.stress}</p>`;
+ const c7=[],c1=[];g.forEach((r,i)=>r.forEach((v,c)=>{if(v===7)c7.push([i,c]);if(v===1)c1.push([i,c])}));
+ const own=c7.filter(a=>a[1]===m).length,cross=c7.filter(a=>a[1]!==m);
+ h+=`<p><b>你最認同的特質（7 分）：</b>${c7.map(fmc).join('、')}<br><b>最不像你的特質（1 分）：</b>${c1.map(fmc).join('、')}</p><p>5 組中有 ${own} 組把 7 分給了${T[m].n}型的特質，${own>=4?'風格一致、很穩定':own>=2?'你有穩定的主軸，同時保有彈性':'你會依情境切換風格，接近變色龍'}。${cross.length?'你也把 7 分給了'+cross.map(fmc).join('、')+'，顯示你另有這一面。':''}</p></div>`;
+ h+=timeCard(m);
+ const pv=n>1?st.hist[n-2]:null,cu=st.hist[n-1];
+ if(pv&&cu){const df=cu.s.map((v,i)=>v-pv.s[i]),k=df.reduce((a,v,i)=>Math.abs(v)>Math.abs(df[a])?i:a,0),pm=pv.s.indexOf(Math.max(...pv.s));
+  h+=`<div class='card'><h2>與上次比較（${new Date(pv.t).toLocaleDateString('zh-TW')}）</h2><p>${T.map((t,i)=>`${t.e}${t.k} ${pv.s[i]}→${cu.s[i]}（${df[i]>0?'+':''}${df[i]}）`).join('　')}</p><p>${pm===m?`主型仍是${T[m].n}型。`:`主型從${T[pm].n}變成${T[m].n}。`}${Math.abs(df[k])>=4?`${T[k].n}變化最大：${df[k]>0?'這項特質比上次更明顯':'這項特質比上次收斂'}。`:'各項變化不大，狀態穩定。'}作答時間：${pv.sec} 秒 → ${cu.sec} 秒。</p></div>`}
+ else h+=`<div class='card'><h2>紀錄</h2><p class='mu'>這是這台裝置上的第 1 次紀錄；再做一次，這裡就會顯示變化。紀錄只存在這台裝置。</p></div>`;
+ const w7=c7.length?c7[sd%c7.length]:null;
+ h+=`<div class='card'><h2>這次給你的建議（第 ${n} 次）</h2><ul>${w7?`<li><b>發揮：</b>你給 7 分的「${W[w7[0]][w7[1]]}」是你的招牌，這週刻意在一個場合用上它。</li>`:''}<li><b>留意：</b>${pk(xt.bl,sd)}。試試：${pk(xt.yt,sd,n)}。</li><li><b>練習你最少用的${T[low].n}面向：</b>${pk(MICRO[low],sd,n)}。</li><li><b>成長方向：</b>${xt.gr}</li></ul></div>`;
+ const car=[...new Set([...xt.car,...X[m2].car.slice(0,2)])];
+ h+=`<div class='card'><h2>可以探索的方向</h2><p>${car.join('、')}。</p><p class='mu'>只是方向參考，不是職業判定；興趣、價值觀與能力同樣重要。</p></div>`;
+ return h}catch(e){return ''}}
+const rel=a=>{const sc=st.self,ord=[0,1,2,3].sort((p,q)=>sc[p]-sc[q]);
+ return `<h2>你（${T[a].n}）與四種類型的相處</h2>`+ord.map(j=>{const k=pairKey(a,j),p=PI[k],lv=band(sc[j]);
+ return `<div class='card'><b>${T[j].e} 遇到${T[j].n}（${KIND[k]}${j===ord[0]?'，你最需要練習':''}）</b><ul><li><b>相處：</b>${TIP[a][j]}</li><li><b>強連結：</b>${p[0]}</li><li><b>摩擦點：</b>${p[1]}</li><li><b>橋接做法：</b>${p[2]}</li><li><b>你的條件：</b>${lv>=3?`你本身也有不少${T[j].n}的一面，可以直接用這一面溝通。`:lv<=1?'這是你較少用的風格，先從小事和短對話開始練。':`你有一定的${T[j].n}特質，可以有意識地多用一點。`}</li></ul></div>`}).join('')};
+function joEnrich(){try{const s=st.gs,o=ogAvg(),sc=st.self,oa=avg();if(!o||!done(s))return '';
+ let mad=0;const cells=[];for(let r=0;r<5;r++)for(let c=0;c<4;c++){const d=o[r][c]-s[r][c];mad+=Math.abs(d)/20;cells.push({r,c,d,s:s[r][c],o:o[r][c]})}
+ const pct=Math.round(100*(1-mad/6)),lvl=pct>=80?'強':pct>=65?'中':'弱',fm=x=>fmc([x.r,x.c]);
+ const strong=cells.filter(x=>x.s>=5&&x.o>=5&&Math.abs(x.d)<=1.5).sort((a,b)=>Math.min(b.s,b.o)-Math.min(a.s,a.o)).slice(0,4);
+ const blind=cells.filter(x=>x.d>=2.5).sort((a,b)=>b.d-a.d).slice(0,3),hid=cells.filter(x=>x.d<=-2.5).sort((a,b)=>a.d-b.d).slice(0,3);
+ const sd=hs(sc.join()+oa.map(fmt).join()+st.hist.length),q={open:[],blind:[],hid:[],unk:[]};
+ T.forEach((t,i)=>{q[sc[i]>20&&oa[i]>20?'open':sc[i]<=20&&oa[i]>20?'blind':sc[i]>20&&oa[i]<=20?'hid':'unk'].push(t)});
+ let h=`<div class='card'><h2>周哈里窗深入解讀</h2><p><b>自評與他評的連結強度：${lvl}（一致度 ${pct}%）</b><br>20 個特質平均相差 ${fmt(mad)} 分（最大差距 6 分）。</p>`;
+ if(st.og.length>1){let t=0,k=0;for(let i=0;i<st.og.length;i++)for(let j=i+1;j<st.og.length;j++){let d=0;for(let r=0;r<5;r++)for(let c=0;c<4;c++)d+=Math.abs(st.og[i][r][c]-st.og[j][r][c])/20;t+=d;k++}const ag=Math.round(100*(1-t/k/6));h+=`<p><b>評價者之間的一致度：${ag}%</b>（${st.og.length} 位）。${ag>=75?'大家看法接近，他評的參考價值高。':'不同的人看到不同的你，這很正常，代表你在不同關係裡的樣子不同。'}</p>`}
+ ['open','blind','hid','unk'].forEach(k=>{if(q[k].length)h+=`<p><b>${JQ[k][0]}・${JQ[k][1]}：</b>${q[k].map(t=>t.e+t.n).join('、')}<br><b>正向：</b>${JQ[k][2]}<br><b>反向：</b>${JQ[k][3]}</p>`});
+ h+=`<p><b>強連結（雙方都認為像你）：</b>${strong.length?strong.map(fm).join('、'):'目前沒有明顯重疊的特質'}<br><b>弱連結・別人看得比你多：</b>${blind.length?blind.map(fm).join('、'):'沒有明顯落差'}<br><b>弱連結・你自認有、別人較少看到：</b>${hid.length?hid.map(fm).join('、'):'沒有明顯落差'}</p><ul>`;
+ if(hid.length)h+=`<li><b>主動展現：</b>選一個場合，用具體行動展現${fm(pk(hid,sd))}，再問對方有沒有感受到。</li>`;
+ if(blind.length)h+=`<li><b>請教：</b>請對方舉一個你展現${fm(pk(blind,sd))}的例子，並問「這對你有什麼影響？」</li>`;
+ if(strong.length)h+=`<li><b>招牌：</b>把${fm(pk(strong,sd))}當成你的招牌，介紹自己時主動說出來。</li>`;
+ if(!hid.length&&!blind.length)h+='<li>你與他人的看法相當一致，可以挑一個「未知我」的類型做小實驗，看看有沒有新發現。</li>';
+ return h+'</ul></div>'}catch(e){return ''}}
 const API='https://script.google.com/macros/s/AKfycbyVQLsiDiJbYLASWVxsBp6BuYLXAeB5Dy-xWjbDl-jSghTD-_oj7XY_uLPTFXphjCP2fQ/exec';
 const post=d=>{try{fetch(API,{method:'POST',mode:'no-cors',body:JSON.stringify(d)}).catch(()=>{})}catch(e){}};
 const base=()=>st.link.split(/[?#]/)[0];
@@ -104,8 +180,8 @@ const shareRow=(u,i,t)=>`<input readonly value='${esc(u)}' onfocus='this.select(
 async function pull(){try{const j=await(await fetch(API+'?a=others&id='+st.id)).json();let n=0;(Array.isArray(j)?j:[]).forEach(x=>{const g=decg(x.code);if(g&&!st.codes.includes(x.code)){st.codes.push(x.code);st.others.push(sum(g));st.og.push(g);n++;if(x.msg)st.words.push(String(x.msg))}});st.msg=n?`已收到 ${n} 份新評價`:'目前沒有新的評價'}catch(e){st.msg='讀取失敗，請稍後再試，或改用代碼'}render()}
 async function hostgo(){const q=i=>document.getElementById(i).value.trim();st.hc=q('hc');const k=q('hk');st.msg='讀取中…';render();try{const j=await(await fetch(API+'?a=host&key='+encodeURIComponent(k)+'&cls='+encodeURIComponent(st.hc))).json();if(j.error){st.msg='密碼錯誤或無權限。';st.hres=''}else{st.msg='';st.hres=hr(j)}}catch(e){st.msg='讀取失敗，請稍後再試。'}render()}
 const KEY='disc-v1';
-function save(){if(RATER)return;try{localStorage.setItem(KEY,JSON.stringify({self:st.self,gs:st.gs,others:st.others,og:st.og,codes:st.codes,prof:st.prof,id:st.id,sent:st.sent,opt:st.opt,sel:st.sel,words:st.words}))}catch(e){}}
-function load(){if(RATER)return;try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&d.self){st.self=d.self;st.gs=d.gs||st.gs;st.prof=d.prof||st.prof;st.id=d.id||st.id;st.sent=!!d.sent;st.opt=false;st.sel=d.sel==null?null:d.sel;st.words=d.words||[];st.og=d.og||[];st.others=d.others||[];st.codes=d.codes||[];st.resume=st.others.length?'invite':'selfRes'}}catch(e){}}
+function save(){if(RATER)return;try{localStorage.setItem(KEY,JSON.stringify({self:st.self,gs:st.gs,others:st.others,og:st.og,codes:st.codes,prof:st.prof,id:st.id,sent:st.sent,opt:st.opt,sel:st.sel,words:st.words,hist:st.hist,tmeta:st.tmeta,tm:st.tm,nc:st.nc}))}catch(e){}}
+function load(){if(RATER)return;try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&d.hist)st.hist=d.hist;if(d&&d.self){st.tmeta=d.tmeta||null;st.tm=d.tm||null;st.nc=d.nc||null;st.self=d.self;st.gs=d.gs||st.gs;st.prof=d.prof||st.prof;st.id=d.id||st.id;st.sent=!!d.sent;st.opt=false;st.sel=d.sel==null?null:d.sel;st.words=d.words||[];st.og=d.og||[];st.others=d.others||[];st.codes=d.codes||[];st.resume=st.others.length?'invite':'selfRes'}}catch(e){}}
 addEventListener('hashchange',()=>{RATER=location.hash==='#rater'||QP.has('r');st.s=RATER?'rintro':'intro';render()});
 const avg=()=>[0,1,2,3].map(c=>st.others.reduce((a,o)=>a+o[c],0)/st.others.length);
 function grid(g,key){return g.map((r,i)=>`<div class="row"><div class="rh">第 ${i+1} 組<span>已填 ${r.filter(v=>v!=null).length}/4</span></div><div class="cells">`+r.map((v,c)=>`<div class="cell${v!=null?' on':''}"><div class="w">${W[i][c]}</div><div class="chips">`+[1,3,5,7].map(n=>`<button data-g="${key}" data-r="${i}" data-c="${c}" data-v="${n}" class="${v===n?'sel':''}">${n}</button>`).join('')+'</div></div>').join('')+'</div></div>').join('')}
@@ -116,7 +192,7 @@ function res(sc,tips){
  h+=`<div class="card"><h2>${cham?'🦎 變色龍型':tops.map(i=>`${T[i].e} ${T[i].n}型（${T[i].f}）`).join('＋')}</h2>`;
  if(cham)h+=`<p>${CHAM}</p><p class="mu">判定方式：最高分與最低分相差 8 分以內。略偏：${tops.map(i=>T[i].n).join('、')}。</p>`;
  else{h+=tops.map(i=>`<p>${T[i].d}</p>`).join('');if(rest&&mx-rest[0]<=4)h+=`<p class="mu">副型傾向：${T[rest[1]].e} ${T[rest[1]].n}型</p>`}
- if(tips){const a=tops[0];h+=`<h2>你（${T[a].n}）遇到不同類型的人</h2><ul>`+T.map((t,j)=>`<li><b>${t.e} 遇到${t.n}：</b>${TIP[a][j]}</li>`).join('')+'</ul>'}
+ if(tips){h+=rel(tops[0])}
  return h+'</div>'}
 function cmp(){
  const s=st.self,o=avg(),q={open:[],blind:[],hid:[],unk:[]};
@@ -126,14 +202,14 @@ function cmp(){
  let h='<div class="card"><h2>自評與他評分數</h2><table><tr><th></th><th>自評</th><th>他評</th><th>差距</th></tr>'+T.map((t,i)=>`<tr><td>${t.e} ${t.n}</td><td>${fmt(s[i])}</td><td>${fmt(o[i])}</td><td>${gap[i]>0?'+':''}${fmt(gap[i])}</td></tr>`).join('')+`</table><p>${top(s)===top(o)?`自評與他評的主型一致，都是${T[top(s)].n}型。`:`自評主型是${T[top(s)].n}，他人眼中的主型是${T[top(o)].n}，兩者不同。`}落差最大的是${T[k].n}：${gap[k]>0?'別人比你自己更看見這項特質。':'你自認有這項特質，別人較少看到。'}（共 ${st.others.length} 位評價者的平均）</p></div>`;
  {const og=ogAvg();if(og)h+=tbl(st.gs,og,'5 組作答對照（自／他）')}
  h+='<div class="card"><h2>周哈里窗</h2><p class="mu">以該類型分數高於 20 分（四項平均）視為「明顯」，再對照自己與他人是否都看見。</p><div class="j">'+['open','blind','hid','unk'].map(x=>`<div class="jb"><h3>${JO[x][0]}</h3><p>${JO[x][1]}</p>${q[x].join('')||'<span class="mu">無</span>'}<p>${JO[x][2]}</p></div>`).join('')+'</div></div>';
- return h}
+ return h+joEnrich()}
 function render(){
  const s=st.s;let h='';
  if(s==='intro'&&!st.prof.cls)h=`<h1>Junba 維護 DISC 人際風格測驗</h1><div class='card'><h2>先輸入課堂代號</h2><p class='mu'>請輸入主持人提供的課堂代號，或直接掃描主持人的 QR（會自動帶入）。</p><label for='cl'>課堂代號</label><input id='cl' placeholder='例如 b52tw' autocomplete='off'><button class='btn' data-a='entercls'>進入課堂</button><button class='btn g' data-a='gohost'>我是主持人</button><p>${st.msg||''}</p></div>`;
  else if(s==='intro'&&!st.opt)h=`<h1>Junba 維護 DISC 人際風格測驗</h1>${priv()}`;
  else if(s==='intro')h=`<h1>Junba 維護 DISC 人際風格測驗</h1>${summ()}<div class="card"><p>共三步：先自評，再請重要它人評價，最後比對兩者並以周哈里窗分析。</p><ul><li>每一組有 4 個描述，每一個詞都是一項「特質」，請依這項特質像不像你，把 <b>1、3、5、7</b> 各用一次：7 分最像你，5 分大部分有像你，3 分只有部分像你，1 分最不像你。</li><li>共 5 組。系統會把每一欄由上到下加總，得到 D、I、S、C 四項統計結果。</li><li>填寫時不會顯示類型名稱，以免影響作答。</li></ul><p class="mu">本測驗是自我探索工具，不是專業心理診斷。</p><button class="btn" data-a="start">開始自評</button><button class='btn g' data-a='gohost'>主持人入口</button><details><summary>想用手機做？掃這個 QR</summary>${qr(st.link)}</details></div>`;
  else if(s==='self')h=`<h1>第一步：自評</h1><p class="mu">依「你覺得自己」的樣子。每一個詞都是一項特質，請依這項特質像不像你，每組 1、3、5、7 各用一次。</p>${grid(st.gs,'gs')}<button class="btn" data-a="selfdone" ${done(st.gs)?'':'disabled'}>計算我的結果</button>`;
- else if(s==='selfRes')h=`<h1>你的自評結果</h1>${res(st.self,true)}${tbl(st.gs,null,'我的 5 組作答')}${upl()}${pdfb('下載我的 PDF 報告')}<button class="btn" data-a="toother">想了解別人眼中的你嗎？請按</button>`;
+ else if(s==='selfRes')h=`<h1>你的自評結果</h1>${res(st.self,true)}${rich()}${tbl(st.gs,null,'我的 5 組作答')}${upl()}${pdfb('下載我的 PDF 報告')}<button class="btn" data-a="toother">想了解別人眼中的你嗎？請按</button>`;
  else if(s==='other'&&RATER)h=`<h1>請評價對方</h1><p class='mu'>每一個詞都是一項特質，憑你對他的印象，每組 1、3、5、7 各用一次（7 最像、5 大部分像、3 只有部分像、1 最不像）。</p>${grid(st.go,'go')}<button class='btn' data-a='rdone' ${done(st.go)?'':'disabled'}>產生我的代碼</button>`;
  else if(s==='other')h=`<h1>第二步：他人評價（第 ${st.others.length+1} 位）</h1><p class="mu">請把畫面交給信任的朋友或同事，依「他眼中的你」作答；每組 1、3、5、7 各用一次。</p>${grid(st.go,'go')}<button class="btn" data-a="otherdone" ${done(st.go)?'':'disabled'}>送出這位的評價</button>`;
  else if(s==='otherRes')h=`<h1>他人眼中的你</h1><p class="mu">目前 ${st.others.length} 位評價者的平均。</p>${res(avg(),false)}${wordsCard()}${ogAvg()?tbl(ogAvg(),null,'他人評價的 5 組作答（平均）'):''}${pdfb('下載他評 PDF 報告')}<button class="btn g" data-a="more">再加一位評價者</button><button class="btn" data-a="compare">看自評與他評比對</button>`;
@@ -143,14 +219,14 @@ function render(){
  else if(s==='rres'){const c=enc(st.go);h=`<h1>完成，謝謝你！</h1><div class='card'><p>請把這組代碼交給對方：</p><div class='code'>${c}</div>${qr(c)}${QP.has('r')?`<p class='mu'>你的評分已自動送給對方，若對方沒收到，請把代碼交給他。</p>`:''}<p class='mu'>可以讓對方掃描這個 QR、傳訊息給他，或直接唸給他。</p><button class='btn g' data-a='copy' data-c='${c}'>複製代碼</button></div>`}
  else if(s==='invite')h=`<h1>第二步：請重要它人評價你</h1><div class='card'><h2>方式一：讓對方掃碼</h2><p>請對方用手機或平板的相機掃描，填完會得到一組 6 個字母的代碼。</p>${qr(rl())}${shareRow(rl(),0,'想請你花 3 分鐘，幫我評價「我給人的印象」：')}</div><div class='card'><h2>輸入對方給你的代碼</h2><p class='mu'>可一次貼上多組，用空白或換行分開。</p><textarea id='cd' rows='3' placeholder='例如 KQMBTH'></textarea><button class='btn' data-a='addcodes'>加入</button><p>${st.msg||''}</p><p>目前已收到 ${st.others.length} 份評價。</p>${wordsCard()}${st.prof.mode>0?`<button class='btn g' data-a='fetch'>收取網路上的評價</button><p class='mu'>別人掃 QR 評完後，分數會自動送到雲端，按這裡收取。</p>`:''}</div><div class='card'><h2>方式二：當面交給對方填</h2><button class='btn g' data-a='inperson'>在這台裝置上讓對方填</button></div>${st.others.length?`<button class='btn' data-a='compare'>看自評與他評比對</button><button class='btn g' data-a='otherres'>只看他人眼中的我</button>`:''}`;
  else h=`<h1>第三步：自評與他評比對</h1>${cmp()}${wordsCard()}${pdfb('下載完整比對報告 PDF')}<button class="btn g" data-a="more">再加一位評價者</button>`;
- if(s==='intro'&&st.resume&&!RATER)h=`<div class='card'><b>你有上次的紀錄</b>（已完成自評${st.others.length?`，已有 ${st.others.length} 份他評`:''}）<br><button class='btn' data-a='resume'>繼續上次進度</button><button class='btn g' data-a='fresh'>從頭開始（清除紀錄）</button></div>`+h;
+ if(s==='intro'&&(st.resume||st.hist.length)&&!RATER)h=(st.resume?`<div class='card'><b>你有上次的紀錄</b>（已完成自評${st.others.length?`，已有 ${st.others.length} 份他評`:''}）<br><button class='btn' data-a='resume'>繼續上次進度</button><button class='btn g' data-a='fresh'>從頭開始（清除紀錄）</button></div>`:`<div class='card'><b>這台裝置有 ${st.hist.length} 次測驗紀錄</b>（用來顯示「與上次比較」，只存在這台裝置）<br><button class='btn g' data-a='fresh'>清除紀錄</button></div>`)+h;
  if(!RATER&&BACK[s])h+=`<br><button class='btn g' data-a='back'>← 回上一頁</button>`;
  if(['selfRes','otherRes','cmp'].includes(s))h=`<div class='ph'><b>Junba 維護 DISC 人際風格測驗報告</b>　${st.prof.name?esc(st.prof.name)+'　':''}${new Date().toLocaleDateString('zh-TW')}</div>`+h;
  if(!RATER&&s!=='intro')h+='<br><button class="btn g" data-a="reset">重新開始</button>';
  document.getElementById('app').innerHTML=h;window.scrollTo(0,0);save()}
 document.addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b)return;
- if(b.dataset.g){const g=st[b.dataset.g],r=+b.dataset.r,c=+b.dataset.c,v=+b.dataset.v,y=window.scrollY;
+ if(b.dataset.g){const g=st[b.dataset.g],r=+b.dataset.r,c=+b.dataset.c,v=+b.dataset.v,y=window.scrollY;if(b.dataset.g==='gs'){const nw=Date.now();st.tm=st.tm||[0,0,0,0,0];st.nc=st.nc||[0,0,0,0,0];st.tm[r]+=st.tl?Math.min(nw-st.tl,60000):0;st.nc[r]++;st.tl=nw}
   if(g[r][c]===v)g[r][c]=null;else{for(let k=0;k<4;k++)if(g[r][k]===v)g[r][k]=null;g[r][c]=v}
   render();window.scrollTo(0,y);return}
  const a=b.dataset.a;st.msg='';
@@ -160,14 +236,14 @@ document.addEventListener('click',e=>{
  if(a==='shareqr'){qrBlob(+b.dataset.i).then(bl=>{const f=new File([bl],'DISC-QR.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]}))return navigator.share({files:[f],text:b.dataset.t});toast('此裝置不支援直接分享圖片，請改用「下載 QR 圖片」')}).catch(()=>{});return}
  if(a==='pdf'){window.print();return}
  if(a==='copy'){try{navigator.clipboard.writeText(b.dataset.c).catch(()=>{})}catch(e){}return}
- if(a==='start')st.s='self';
- else if(a==='selfdone'){st.self=sum(st.gs);st.s='selfRes'}
+ if(a==='start'){st.s='self';st.tl=Date.now();st.tm=[0,0,0,0,0];st.nc=[0,0,0,0,0]}
+ else if(a==='selfdone'){st.self=sum(st.gs);const tm=st.tm||[0,0,0,0,0],nc=st.nc||[0,0,0,0,0];st.tmeta={sec:Math.round(tm.reduce((x,y)=>x+y,0)/1000),rows:tm.map(x=>Math.round(x/1000)),rev:nc.reduce((x,y)=>x+Math.max(0,y-4),0)};const hh=st.hist,e={t:Date.now(),s:st.self.slice(),sec:st.tmeta.sec,rev:st.tmeta.rev};if(hh.length&&hh[hh.length-1].s.join()===e.s.join())hh[hh.length-1]=e;else hh.push(e);if(hh.length>12)hh.shift();st.s='selfRes'}
  else if(a==='toother')st.s='invite';
  else if(a==='otherdone'){st.others.push(sum(st.go));st.og.push(st.go.map(r=>r.slice()));st.s='otherRes'}
  else if(a==='more')st.s='invite';
- else if(a==='compare')st.s='cmp';
+ else if(a==='compare'){if(st.others.length)st.s='cmp'}
  else if(a==='otherres')st.s='otherRes';
- else if(a==='back')st.s=BACK[st.s]||st.s;
+ else if(a==='back'){st.s=BACK[st.s]||st.s;if(st.s==='self')st.tl=Date.now()}
  else if(a==='gohost')st.s='host';
  else if(a==='entercls'){const v=((document.getElementById('cl')||{}).value||'').trim();if(v)st.prof.cls=v;else st.msg='請先輸入課堂代號'}
  else if(a==='chgcls')st.prof.cls='';
@@ -181,7 +257,7 @@ document.addEventListener('click',e=>{
  else if(a==='rsend'){const v=i=>(document.getElementById(i)||{}).value||'';post({type:'other',cls:QP.get('c')||'',id:QP.get('r'),score:sum(st.go),code:enc(st.go),rating:v('rr'),msg:v('wd').slice(0,100)});st.s='rres'}
  else if(a==='addcodes'){const v=document.getElementById('cd').value.split(/[\s,;]+/).filter(Boolean);let ok=0,bad=0,dup=0;v.forEach(c=>{c=c.toUpperCase();const gr=decg(c);if(!gr)bad++;else if(st.codes.includes(c))dup++;else{st.codes.push(c);st.others.push(sum(gr));st.og.push(gr);ok++}});st.msg=`已加入 ${ok} 份`+(bad?`，${bad} 組代碼無效，請檢查是否輸錯`:'')+(dup?`，${dup} 組重複已略過`:'')}
  else if(a==='resume'){st.opt=true;st.s=st.resume;st.resume=''}
- else if(a==='reset'||a==='fresh')st={prof:{mode:0,cls:st.prof.cls,name:'',email:'',phone:'',line:''},id:nid(),sent:false,opt:false,sel:null,words:[],hc:'',hres:'',s:'intro',self:null,gs:blank(),go:blank(),others:[],og:[],codes:[],msg:'',link:st.link};
+ else if(a==='reset'||a==='fresh')st={prof:{mode:0,cls:st.prof.cls,name:'',email:'',phone:'',line:''},id:nid(),sent:false,opt:false,sel:null,words:[],hist:a==='fresh'?[]:st.hist,tmeta:null,tm:null,nc:null,tl:null,hc:'',hres:'',s:'intro',self:null,gs:blank(),go:blank(),others:[],og:[],codes:[],msg:'',link:st.link};
  render()});
 document.addEventListener('change',e=>{if(e.target.name==='pm'){const v=e.target.value,s=(i,x)=>{const el=document.getElementById(i);if(el)el.style.display=x?'block':'none'};s('pf',true);s('cf',v==='2');s('cg',v!=='0')}});
 load();if(QP.get('c'))st.prof.cls=QP.get('c');if(RATER)st.s='rintro';else if(HOST)st.s='host';render();
